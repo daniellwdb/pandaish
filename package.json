@@ -1,0 +1,62 @@
+{
+  "name": "pandaish",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The fun-filled Discord bot. Featuring moderation, server management, and more. Enhance your Discord chats now with Pandaish.",
+  "keywords": [
+    "fun",
+    "moderation",
+    "free",
+    "bot",
+    "utility"
+  ],
+  "homepage": "https://github.com/daniellwdb/pandaish#readme",
+  "bugs": {
+    "url": "https://github.com/daniellwdb/pandaish/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daniellwdb/pandaish.git"
+  },
+  "license": "MPL-2.0",
+  "author": "Daniell Wijdenbosch <d.wijdenbosch@icloud.com> (https://daniell.dev/)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "prebuild": "rimraf ./dist",
+    "build": "tsc",
+    "prepare": "husky install",
+    "start": "nodemon -q ./src/index.ts | pino-pretty -t 'SYS:yyyy-mm-dd HH:MM:ss' -i pid"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --cache --fix",
+    "*": "prettier --write --ignore-unknown"
+  },
+  "dependencies": {
+    "convict": "^6.2.4",
+    "discord.js": "^14.7.1",
+    "pino": "^8.10.0",
+    "unsplash-js": "^7.0.15"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.4.2",
+    "@commitlint/config-conventional": "^17.4.2",
+    "@commitlint/types": "^17.4.0",
+    "@types/convict": "^6.1.1",
+    "@types/eslint": "^8.21.0",
+    "@typescript-eslint/eslint-plugin": "^5.51.0",
+    "@typescript-eslint/parser": "^5.51.0",
+    "dotenv": "^16.0.3",
+    "eslint": "^8.34.0",
+    "eslint-import-resolver-typescript": "^3.5.3",
+    "eslint-plugin-import": "^2.27.5",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.1.1",
+    "nodemon": "^2.0.20",
+    "pino-pretty": "^9.1.1",
+    "prettier": "^2.8.4",
+    "rimraf": "^4.1.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
+  }
+}
