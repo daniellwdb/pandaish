@@ -16,7 +16,7 @@ import type {
 } from "discord.js";
 import type { Narrow } from "../types.js";
 
-export interface ApplicationCommandOptionTypeValues {
+interface ApplicationCommandOptionTypeValues {
   [ApplicationCommandOptionType.Subcommand]: ApplicationCommandSubCommandData[];
   [ApplicationCommandOptionType.SubcommandGroup]: ApplicationCommandSubGroupData[];
   [ApplicationCommandOptionType.String]: string;
