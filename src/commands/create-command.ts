@@ -76,7 +76,7 @@ export const createCommand = <
   command: {
     type: T;
   } & (T extends ApplicationCommandType.ChatInput
-    ? ApplicationCommandData & { options: U }
+    ? ApplicationCommandData & { options?: U }
     : ApplicationCommandData),
   execute: (...args: CommandExecuteArgs<U>[T]) => Awaitable<void>
 ) => ({ ...command, execute });
