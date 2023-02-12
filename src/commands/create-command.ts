@@ -56,11 +56,13 @@ export type InferCommandOptions<T extends ApplicationCommandOptionData[]> = {
   [O in T[number] as OptionalOptionName<O>]?: OptionValue<O>;
 };
 
-interface CommandExecuteArgs<U extends ApplicationCommandOptionData[]> {
-  [ApplicationCommandType.ChatInput]: [
-    interaction: ChatInputCommandInteraction<"cached">,
-    options: InferCommandOptions<U>
-  ];
+interface CommandExecuteArgs<U extends ApplicationCommandOptionData[] | void> {
+  [ApplicationCommandType.ChatInput]: U extends ApplicationCommandOptionData[]
+    ? [
+        interaction: ChatInputCommandInteraction<"cached">,
+        options: InferCommandOptions<U>
+      ]
+    : [interaction: ChatInputCommandInteraction<"cached">];
   [ApplicationCommandType.User]: [
     interaction: UserContextMenuCommandInteraction<"cached">
   ];
@@ -71,7 +73,7 @@ interface CommandExecuteArgs<U extends ApplicationCommandOptionData[]> {
 
 export const createCommand = <
   T extends ApplicationCommandType,
-  U extends Narrow<ApplicationCommandOptionData[]>
+  U extends Narrow<ApplicationCommandOptionData[]> | void = void
 >(
   command: {
     type: T;
