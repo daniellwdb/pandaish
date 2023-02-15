@@ -7,11 +7,37 @@ import {
   codeBlock,
   CommandInteractionOption,
   Events,
+  TextInputComponent,
 } from "discord.js";
-import type { InferCommandOptions } from "../../commands/create-command.js";
+import type {
+  NonJSONEncodableComponent,
+  InferCommandComponentValues,
+  InferCommandComponentInputValues,
+  InferCommandOptionValues,
+} from "../../commands/create-command.js";
 import * as commands from "../../commands/index.js";
 import { logger } from "../../logger.js";
 import { createEvent } from "../create-event.js";
+
+const transformCommandComponentInputs = (components: TextInputComponent[]) =>
+  components.reduce(
+    (previousValue, component) => ({
+      ...previousValue,
+      [component.customId]: component.value,
+    }),
+    {} as InferCommandComponentInputValues<NonJSONEncodableComponent[]>
+  );
+
+const transformCommandComponents = <T extends NonJSONEncodableComponent[]>(
+  components: T
+) =>
+  components.reduce(
+    (previousValue, component) => ({
+      ...previousValue,
+      ["customId" in component ? component.customId : component.id]: component,
+    }),
+    {} as InferCommandComponentValues<T>
+  );
 
 const transformCommandOptions = (
   options: ReadonlyArray<CommandInteractionOption<"cached">>
@@ -63,26 +89,63 @@ const transformCommandOptions = (
     }
 
     return previousValue;
-  }, {} as InferCommandOptions<ApplicationCommandOptionData[]>);
+  }, {} as InferCommandOptionValues<ApplicationCommandOptionData[]>);
 
 export const interactionCreateEvent = createEvent({
   event: Events.InteractionCreate,
   callback: async (interaction) => {
     if (
+      !interaction.isModalSubmit() &&
       !interaction.isChatInputCommand() &&
       !interaction.isContextMenuCommand()
     ) {
       return;
     }
 
-    if (!interaction.inCachedGuild() || !interaction.channel) {
+    if (!interaction.inCachedGuild()) {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    if (interaction.isModalSubmit()) {
+      const commandWithComponentCb = Object.values(commands).find(
+        (command) =>
+          command.type === ApplicationCommandType.ChatInput &&
+          command.components?.some(
+            ({ customId }) => customId === interaction.customId
+          )
+      );
+
+      if (
+        !commandWithComponentCb ||
+        commandWithComponentCb.type !== ApplicationCommandType.ChatInput ||
+        !commandWithComponentCb.components
+      ) {
+        throw new Error("Could not find command");
+      }
+
+      await commandWithComponentCb.componentCallback({
+        interaction,
+        componentInputValues: transformCommandComponentInputs([
+          ...interaction.fields.fields.values(),
+        ]) as InferCommandComponentInputValues<
+          NonNullable<(typeof commandWithComponentCb)["components"]>
+        >,
+      });
+
+      return;
+    }
+
     const command = Object.values(commands).find(
       ({ name }) => name === interaction.commandName
-    )!;
+    );
+
+    if (!command) {
+      throw new Error("Could not find command");
+    }
+
+    if (!interaction.channel) {
+      throw new Error("Could not find interaction channel");
+    }
 
     if (command.defaultMemberPermissions) {
       const clientAsGuildMember = await interaction.guild.members.fetchMe();
@@ -105,24 +168,27 @@ export const interactionCreateEvent = createEvent({
         interaction.isChatInputCommand() &&
         command.type === ApplicationCommandType.ChatInput
       ) {
-        await command.execute(
+        await command.execute({
           interaction,
-          transformCommandOptions(interaction.options.data)
-        );
+          // These properties cannot be used by the type definition of `execute` when `options` / `components` do not exist
+          // So it's fine to fall back to an empty object
+          options: transformCommandOptions(command.options ?? []),
+          components: transformCommandComponents(command.components ?? []),
+        });
       }
 
       if (
         interaction.isUserContextMenuCommand() &&
         command.type === ApplicationCommandType.User
       ) {
-        await command.execute(interaction);
+        await command.execute({ interaction });
       }
 
       if (
         interaction.isMessageContextMenuCommand() &&
         command.type === ApplicationCommandType.Message
       ) {
-        await command.execute(interaction);
+        await command.execute({ interaction });
       }
     } catch (error) {
       if (error instanceof Error) {

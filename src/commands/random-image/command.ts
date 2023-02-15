@@ -5,38 +5,30 @@ import {
   Colors,
   PermissionFlagsBits,
 } from "discord.js";
-import { createApi } from "unsplash-js";
+import { unsplash } from "./unsplash.js";
 import { config } from "../../config.js";
 import { logger } from "../../logger.js";
+import { CommandError } from "../command-error.js";
 import { createCommand } from "../create-command.js";
 
-const unsplash = createApi({
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  accessKey: config.get("unsplashAccessKey")!,
-  fetch,
-  apiUrl: "https://api.unsplash.com/",
-});
-
-export const randomImageCommand = createCommand(
-  {
-    type: ApplicationCommandType.ChatInput,
-    name: "random-image",
-    description: "Receive a random image",
-    options: [
-      {
-        type: ApplicationCommandOptionType.String,
-        name: "query",
-        description: "Search term",
-      },
-      {
-        type: ApplicationCommandOptionType.Boolean,
-        name: "hide",
-        description: "Whether or not the image should only be visible for you",
-      },
-    ],
-    defaultMemberPermissions: [PermissionFlagsBits.EmbedLinks],
-  },
-  async (interaction, options) => {
+export const randomImageCommand = createCommand({
+  type: ApplicationCommandType.ChatInput,
+  name: "random-image",
+  description: "Receive a random image",
+  options: [
+    {
+      type: ApplicationCommandOptionType.String,
+      name: "query",
+      description: "Search term",
+    },
+    {
+      type: ApplicationCommandOptionType.Boolean,
+      name: "hide",
+      description: "Whether or not the image should only be visible for you",
+    },
+  ],
+  defaultMemberPermissions: [PermissionFlagsBits.EmbedLinks],
+  execute: async ({ interaction, options }) => {
     await interaction.deferReply({ ephemeral: options.hide ?? false });
 
     const randomPhoto = await unsplash.photos.getRandom({
@@ -47,11 +39,15 @@ export const randomImageCommand = createCommand(
     if (randomPhoto.type === "error") {
       logger.error(randomPhoto.errors);
 
-      throw new Error("Something went wrong");
+      throw new CommandError("Error while fetching image", {
+        commandName: randomImageCommand.name,
+      });
     }
 
     if (Array.isArray(randomPhoto.response)) {
-      throw new Error("Unsplash returned an array of photos");
+      throw new CommandError("Unsplash returned an array of photos", {
+        commandName: randomImageCommand.name,
+      });
     }
 
     const urlSearchParams = new URLSearchParams({
@@ -82,5 +78,5 @@ export const randomImageCommand = createCommand(
         },
       ],
     });
-  }
-);
+  },
+});

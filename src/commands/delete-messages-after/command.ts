@@ -1,21 +1,21 @@
 import { ApplicationCommandType, PermissionFlagsBits } from "discord.js";
+import { BULK_DELETE_LIMIT } from "./constants.js";
+import { CommandError } from "../command-error.js";
 import { createCommand } from "../create-command.js";
 
-const BULK_DELETE_LIMIT = 100;
-
-export const deleteMessagesAfterCommand = createCommand(
-  {
-    type: ApplicationCommandType.Message,
-    name: "Delete Messages After",
-    defaultMemberPermissions: [PermissionFlagsBits.ManageMessages],
-  },
-  async (interaction) => {
+export const deleteMessagesAfterCommand = createCommand({
+  type: ApplicationCommandType.Message,
+  name: "Delete Messages After",
+  defaultMemberPermissions: [PermissionFlagsBits.ManageMessages],
+  execute: async ({ interaction }) => {
     const interactionMessage = await interaction.deferReply({
       fetchReply: true,
     });
 
     if (!interaction.channel) {
-      throw new Error("No interaction channel");
+      throw new CommandError("Could not find interaction channel", {
+        commandName: deleteMessagesAfterCommand.name,
+      });
     }
 
     const messagesToDelete = await interaction.channel.messages.fetch({
@@ -40,5 +40,5 @@ export const deleteMessagesAfterCommand = createCommand(
     return void interaction.followUp(
       `Deleted ${deletedMessages.size} message(s)`
     );
-  }
-);
+  },
+});

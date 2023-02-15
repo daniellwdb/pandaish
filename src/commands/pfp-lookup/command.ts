@@ -1,12 +1,10 @@
 import { ApplicationCommandType, Colors } from "discord.js";
 import { createCommand } from "../create-command.js";
 
-export const pfpLookupCommand = createCommand(
-  {
-    type: ApplicationCommandType.User,
-    name: "PFP Lookup",
-  },
-  async (interaction) => {
+export const pfpLookupCommand = createCommand({
+  type: ApplicationCommandType.User,
+  name: "PFP Lookup",
+  execute: async ({ interaction }) => {
     await interaction.reply({
       embeds: [
         {
@@ -20,5 +18,5 @@ export const pfpLookupCommand = createCommand(
         },
       ],
     });
-  }
-);
+  },
+});

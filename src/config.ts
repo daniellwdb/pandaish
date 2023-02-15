@@ -20,6 +20,12 @@ export const config = convict({
       default: null,
       env: "DISCORD_TEST_GUILD_ID",
     },
+    feedbackChannelId: {
+      doc: "The ID of the channel used to receive feedback.",
+      format: String,
+      default: null,
+      env: "DISCORD_FEEDBACK_CHANNEL_ID",
+    },
   },
   unsplashAccessKey: {
     doc: "The Unsplash API access key.",
