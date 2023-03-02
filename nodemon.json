@@ -1,8 +1,9 @@
 {
-  "watch": ["src/"],
+  "watch": ["./src"],
   "ext": "ts",
+  "exec": "ts-node-esm ./src/index.ts",
   "env": {
-    "TS_NODE_TRANSPILE_ONLY": true,
-    "NODE_OPTIONS": "--no-warnings --loader ts-node/esm -r dotenv/config"
+    "NODE_OPTIONS": "-r dotenv/config",
+    "TS_NODE_TRANSPILE_ONLY": true
   }
 }

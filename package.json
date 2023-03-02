@@ -26,7 +26,7 @@
     "prebuild": "rimraf ./dist",
     "build": "tsc",
     "prepare": "husky install",
-    "start": "nodemon -q ./src/index.ts | pino-pretty -t 'SYS:yyyy-mm-dd HH:MM:ss' -i pid"
+    "start": "nodemon | pino-pretty -t 'SYS:yyyy-mm-dd HH:MM:ss' -i pid"
   },
   "lint-staged": {
     "*.ts": "eslint --cache --fix",
