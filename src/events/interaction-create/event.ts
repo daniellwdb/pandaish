@@ -7,37 +7,11 @@ import {
   codeBlock,
   CommandInteractionOption,
   Events,
-  TextInputComponent,
 } from "discord.js";
-import type {
-  NonJSONEncodableComponent,
-  InferCommandComponentValues,
-  InferCommandComponentInputValues,
-  InferCommandOptionValues,
-} from "../../commands/create-command.js";
+import type { InferCommandOptionValues } from "../../commands/create-command.js";
 import * as commands from "../../commands/index.js";
 import { logger } from "../../logger.js";
 import { createEvent } from "../create-event.js";
-
-const transformCommandComponentInputs = (components: TextInputComponent[]) =>
-  components.reduce(
-    (previousValue, component) => ({
-      ...previousValue,
-      [component.customId]: component.value,
-    }),
-    {} as InferCommandComponentInputValues<NonJSONEncodableComponent[]>
-  );
-
-const transformCommandComponents = <T extends NonJSONEncodableComponent[]>(
-  components: T
-) =>
-  components.reduce(
-    (previousValue, component) => ({
-      ...previousValue,
-      ["customId" in component ? component.customId : component.id]: component,
-    }),
-    {} as InferCommandComponentValues<T>
-  );
 
 const transformCommandOptions = (
   options: ReadonlyArray<CommandInteractionOption<"cached">>
@@ -95,7 +69,6 @@ export const interactionCreateEvent = createEvent({
   event: Events.InteractionCreate,
   callback: async (interaction) => {
     if (
-      !interaction.isModalSubmit() &&
       !interaction.isChatInputCommand() &&
       !interaction.isContextMenuCommand()
     ) {
@@ -103,35 +76,6 @@ export const interactionCreateEvent = createEvent({
     }
 
     if (!interaction.inCachedGuild()) {
-      return;
-    }
-
-    if (interaction.isModalSubmit()) {
-      const commandWithComponentCb = Object.values(commands).find(
-        (command) =>
-          command.type === ApplicationCommandType.ChatInput &&
-          command.components?.some(
-            ({ customId }) => customId === interaction.customId
-          )
-      );
-
-      if (
-        !commandWithComponentCb ||
-        commandWithComponentCb.type !== ApplicationCommandType.ChatInput ||
-        !commandWithComponentCb.components
-      ) {
-        throw new Error("Could not find command");
-      }
-
-      await commandWithComponentCb.componentCallback({
-        interaction,
-        componentInputValues: transformCommandComponentInputs([
-          ...interaction.fields.fields.values(),
-        ]) as InferCommandComponentInputValues<
-          NonNullable<(typeof commandWithComponentCb)["components"]>
-        >,
-      });
-
       return;
     }
 
@@ -173,7 +117,6 @@ export const interactionCreateEvent = createEvent({
           // These properties cannot be used by the type definition of `execute` when `options` / `components` do not exist
           // So it's fine to fall back to an empty object
           options: transformCommandOptions(command.options ?? []),
-          components: transformCommandComponents(command.components ?? []),
         });
       }
 
