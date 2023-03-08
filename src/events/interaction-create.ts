@@ -8,10 +8,10 @@ import {
   CommandInteractionOption,
   Events,
 } from "discord.js";
-import type { InferCommandOptionValues } from "../../commands/create-command.js";
-import * as commands from "../../commands/index.js";
-import { logger } from "../../logger.js";
-import { createEvent } from "../create-event.js";
+import { createEvent } from "./create-event.js";
+import type { InferCommandOptionValues } from "../commands/create-command.js";
+import * as commands from "../commands/index.js";
+import { logger } from "../logger.js";
 
 const transformCommandOptions = (
   options: ReadonlyArray<CommandInteractionOption<"cached">>

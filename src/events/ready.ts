@@ -1,8 +1,8 @@
 import { Events } from "discord.js";
-import * as commands from "../../commands/index.js";
-import { config } from "../../config.js";
-import { logger } from "../../logger.js";
-import { createEvent } from "../create-event.js";
+import { createEvent } from "./create-event.js";
+import * as commands from "../commands/index.js";
+import { config } from "../config.js";
+import { logger } from "../logger.js";
 
 export const readyEvent = createEvent({
   event: Events.ClientReady,

@@ -1,2 +1,2 @@
-export * from "./interaction-create/index.js";
-export * from "./ready/event.js";
+export * from "./interaction-create.js";
+export * from "./ready.js";
